@@ -1,0 +1,16 @@
+CREATE view [dbo].[F_server_details_SACMSQL] as
+select sd.Server,sd.FQDN ,sd.Domain,sd."Windows Domain",sd."OS",sd."OS Version",sd."Environment",sd."IP Addresses" 
+,sd."Cores",sd."OLA",sd."Region",sd."Building Name",sd."Support Group"--f.A_SUPPORT_GROUP "Support Group"
+,sd."Location Type",sd."Annexed or Shared",sd."Virual",sd."Reporting and Analysis"+' '+ isnull(sd."Reporting and Analysis Port",' ') from (
+select distinct h.A_DISPLAY_LABEL "Server",s.a_name sqlname ,h.a_name hname,h.A_FQDN "FQDN" ,h.A_DOMAIN_NAME "Domain" ,h.A_NT_AD_DOMAIN_NAME "Windows Domain",h.A_DISCOVERED_OS_NAME "OS",h.A_OS_VERSION "OS Version",h.A_ENVIRONMENT "Environment",
+h.A_IP_ADDRESS_1 "IP Addresses" ,h.A_CORES "Cores",h.A_OLA "OLA", h.A_REGION "Region",h.A_BLDG_NAME "Building Name",f.A_SUPPORTCONTRACTS "Support Group"--f.A_SUPPORT_GROUP "Support Group"
+,s.A_F_LOCATION_TYPE "Location Type",s.A_F_ANNEXSHARED "Annexed or Shared",h.A_ISVIRTUAL "Virual", i.a_name "Reporting and Analysis",i.A_F_PORT "Reporting and Analysis Port"
+from nt_1 h left join SQLSERVER_1 s
+on s.a_name like '%'+h.a_name+'%'  and h. A_DISPLAY_LABEL not like '%default%' --join LINK_1 l1
+--on h.CMDB_ID=l1.END1_ID
+ left join FCAMS_02_1 f --FCAMS_SUPPORT_1 f
+on f.A_AC_ASSET_TAG=h.A_ASSET_TAG-- f.CMDB_ID=l1.END2_ID 
+left join ROOT_1 r
+on h.CMDB_ID=r.CMDB_ID left join INSTALLED_SOFTWARE_1 i
+on r.A_GLOBAL_ID=i.A_ROOT_CONTAINER and ((i.a_name like '%sql server reporting%') or (i.a_name like '%sql server analysis%'))
+)sd where ((sd.sqlname like '%'+sd.hname+'%' ) or (sd.[Reporting and Analysis] is not null))
